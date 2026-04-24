@@ -1,27 +1,59 @@
 # BidFlats - Bank Auction Properties India
 
-Interactive prototype for SARFAESI bank auction properties across India. No backend needed.
+Live web platform for SARFAESI bank auction properties across India.
+
+**Live site:** https://akshayrsanap.github.io/bidflats/
+
+---
 
 ## Features
-- 16 properties across 8 cities (Mumbai, Bangalore, Pune, Delhi, Chennai, Hyderabad, Kolkata, Ahmedabad)
-- Search and filter by city, price range, property type, bank
-- Live countdown timers ticking in real-time
-- Grid view and Leaflet.js map view with price markers
-- Property detail modal with pricing, specs, auction info, EMI estimate
-- Favorites panel persisted in localStorage
-- Discount badges and live/upcoming status indicators
-- Fully responsive, ESC keyboard shortcut
 
-## Quick Start
-Open index.html in any browser. No install needed.
+- Real listings from IBAPI (ibapi.in) - 9000+ live properties
+- Search by city, price, property type, bank
+- Live auction countdown timers
+- Grid + interactive map view (Leaflet.js)
+- Property detail modal: EMI calc, legal info, direct bidding link
+- Favorites panel, discount badges, mobile responsive
 
-## Deploy to GitHub Pages
-Settings - Pages - Source: main branch, root folder.
-App will be live at https://username.github.io/bidflats/
+---
+
+## Data Source
+
+Listings scraped from **ibapi.in** (Indian Banks Auctions portal,
+an IBA initiative under Ministry of Finance). 9000+ live properties.
+
+---
+
+## Running the Scraper
+
+
+
+The scraper writes . Open  - it auto-loads
+from  if present, otherwise shows 16 sample listings.
+
+### Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| --states | MH KA DL TN GJ TS | State codes |
+| --types | P1 | P1=Residential P2=Commercial |
+| --limit | 100 | Max properties |
+| --all | off | Fetch all (ignores --limit) |
+| --no-detail | off | Skip detail API (faster) |
+| --output | properties.json | Output filename |
+| --delay | 0.4 | Seconds between API calls |
+
+---
 
 ## Tech Stack
-- Vanilla HTML/CSS/JavaScript (single file)
-- Leaflet.js with OpenStreetMap tiles
-- Unsplash for property images
-- localStorage for favorites
+
+- Vanilla HTML/CSS/JS, no build step
+- Leaflet.js + OpenStreetMap for maps
+- Python 3 stdlib scraper (no pip needed)
+- IBAPI ASP.NET WebMethod API (reverse-engineered)
+
+---
+
+## Structure
+
 
