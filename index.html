@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BidFlats - Bank Auction Properties India</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#1a56db;--primary-light:#e8effc;--primary-dark:#1042a3;
+  --accent:#f59e0b;--accent-light:#fef3c7;
+  --success:#10b981;--danger:#ef4444;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;
+  --gray-800:#1f2937;--gray-900:#111827;
+  --radius:12px;--shadow:0 4px 20px rgba(0,0,0,.08);--shadow-lg:0 10px 40px rgba(0,0,0,.12);
+}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--gray-50);color:var(--gray-800)}
+.header{background:white;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:100;padding:0 24px}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;color:var(--primary);text-decoration:none}
+.logo-icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px}
+.nav{display:flex;align-items:center;gap:8px}
+.nav-btn{padding:8px 16px;border-radius:8px;border:none;background:transparent;color:var(--gray-600);font-size:14px;font-weight:500;cursor:pointer;transition:.2s}
+.nav-btn:hover{background:var(--gray-100);color:var(--gray-800)}
+.nav-btn.active{background:var(--primary-light);color:var(--primary)}
+.fav-count{background:var(--danger);color:white;font-size:11px;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px}
+.hero{background:linear-gradient(135deg,#1a56db 0%,#1e3a8a 50%,#312e81 100%);padding:48px 24px 56px;overflow:hidden;position:relative}
+.hero-inner{max-width:900px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.hero h1{color:white;font-size:32px;font-weight:800;margin-bottom:8px}
+.hero p{color:rgba(255,255,255,.8);font-size:16px;margin-bottom:28px}
+.search-box{background:white;border-radius:16px;padding:8px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:var(--shadow-lg)}
+.search-field{flex:1;min-width:150px;position:relative}
+.search-field label{position:absolute;top:6px;left:14px;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;pointer-events:none}
+.search-field select{width:100%;border:2px solid var(--gray-200);border-radius:10px;padding:22px 14px 8px;font-size:14px;font-weight:500;appearance:none;outline:none;background:white;cursor:pointer}
+.search-field select:focus{border-color:var(--primary)}
+.search-btn{background:var(--primary);color:white;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s}
+.search-btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.stats-bar{background:white;border-bottom:1px solid var(--gray-200);padding:12px 24px}
+.stats-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.stats-left{display:flex;align-items:center;gap:16px;font-size:14px;color:var(--gray-600)}
+.stats-left strong{color:var(--gray-900);font-size:18px}
+.view-toggle{display:flex;border:2px solid var(--gray-200);border-radius:8px;overflow:hidden}
+.view-btn{padding:8px 16px;border:none;background:white;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray-500)}
+.view-btn.active{background:var(--primary);color:white}
+.sort-select{padding:8px 12px;border:2px solid var(--gray-200);border-radius:8px;font-size:13px;font-weight:500;outline:none;cursor:pointer}
+.main{max-width:1400px;margin:0 auto;padding:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.card{background:white;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:.3s;cursor:pointer}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.card-img{height:200px;position:relative;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.card:hover .card-img img{transform:scale(1.05)}
+.card-badge{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.badge-type{background:var(--primary);color:white}
+.badge-live{background:var(--danger);color:white;animation:pulse 2s infinite}
+.badge-upcoming{background:var(--accent);color:var(--gray-900)}
+.badge-discount{background:var(--success);color:white}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.card-fav{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.card-fav:hover{transform:scale(1.15)}
+.card-fav.active{background:var(--danger);color:white}
+.card-body{padding:16px}
+.card-title{font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-location{font-size:13px;color:var(--gray-500);margin-bottom:12px}
+.card-prices{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--gray-100)}
+.reserve-label{font-size:10px;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.5px}
+.reserve-price{font-size:22px;font-weight:800;color:var(--success)}
+.market-value{font-size:13px;color:var(--gray-400);text-decoration:line-through}
+.discount-pct{font-size:12px;color:var(--success);font-weight:700}
+.card-meta{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.meta-item{font-size:12px;color:var(--gray-500);background:var(--gray-50);padding:3px 8px;border-radius:6px}
+.card-countdown{background:var(--accent-light);border-radius:8px;padding:10px;text-align:center}
+.countdown-label{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.countdown-timer{display:flex;justify-content:center;gap:8px}
+.countdown-unit{text-align:center}
+.countdown-num{font-size:20px;font-weight:800;color:var(--gray-900);background:white;border-radius:6px;padding:4px 8px;min-width:36px}
+.countdown-txt{font-size:9px;color:var(--gray-400);text-transform:uppercase;margin-top:2px}
+.card-countdown.live{background:#fef2f2}
+.card-countdown.live .countdown-label{color:var(--danger)}
+.card-countdown.live .countdown-num{color:var(--danger)}
+.map-container{display:none;height:calc(100vh - 250px);min-height:500px;border-radius:var(--radius);overflow:hidden}
+.map-container.active{display:block}
+.grid.hidden{display:none}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:white;border-radius:16px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-close{position:sticky;top:12px;float:right;margin:12px;width:36px;height:36px;border-radius:50%;border:none;background:var(--gray-100);cursor:pointer;font-size:18px;z-index:10}
+.modal-close:hover{background:var(--gray-200)}
+.modal-gallery{height:300px;overflow:hidden}
+.modal-gallery img{width:100%;height:100%;object-fit:cover}
+.modal-body{padding:28px}
+.modal-title{font-size:24px;font-weight:800;color:var(--gray-900);margin-bottom:4px}
+.modal-location{font-size:15px;color:var(--gray-500);margin-bottom:20px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.modal-section{background:var(--gray-50);border-radius:10px;padding:16px}
+.modal-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-400);margin-bottom:8px;font-weight:700}
+.modal-row{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-bottom:1px solid var(--gray-100)}
+.modal-row:last-child{border-bottom:none}
+.modal-row span:first-child{color:var(--gray-500)}
+.modal-row span:last-child{font-weight:600;color:var(--gray-800)}
+.modal-cta{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+.btn-primary{background:var(--primary);color:white}.btn-primary:hover{background:var(--primary-dark)}
+.btn-outline{background:white;color:var(--primary);border:2px solid var(--primary)}.btn-outline:hover{background:var(--primary-light)}
+.btn-success{background:var(--success);color:white}
+.empty-state{text-align:center;padding:80px 20px;color:var(--gray-400)}
+.empty-state .icon{font-size:64px;margin-bottom:16px}
+.empty-state h3{font-size:20px;color:var(--gray-600);margin-bottom:8px}
+.fav-panel{position:fixed;top:0;right:-400px;width:380px;height:100%;background:white;z-index:400;box-shadow:-10px 0 40px rgba(0,0,0,.15);transition:.3s}
+.fav-panel.open{right:0}
+.fav-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.3);z-index:399}
+.fav-overlay.open{display:block}
+.fav-panel-header{padding:20px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.fav-panel-header h3{font-size:18px;font-weight:700}
+.fav-panel-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--gray-100);cursor:pointer;font-size:16px}
+.fav-item{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:.15s}
+.fav-item:hover{background:var(--gray-50)}
+.fav-item img{width:80px;height:60px;border-radius:8px;object-fit:cover}
+.fav-item-info h4{font-size:14px;font-weight:600;margin-bottom:2px}
+.fav-item-info p{font-size:12px;color:var(--gray-500)}
+.fav-item-price{font-size:15px;font-weight:700;color:var(--success);margin-top:4px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gray-900);color:white;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:500;z-index:9999;transition:.3s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.amenity-tag{display:inline-block;background:var(--primary-light);color:var(--primary);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;margin:3px}
+@media(max-width:768px){
+  .hero h1{font-size:24px}.search-box{flex-direction:column}.search-field{min-width:100%}
+  .grid{grid-template-columns:1fr}.modal-grid{grid-template-columns:1fr}
+  .stats-inner{flex-direction:column;align-items:flex-start}.fav-panel{width:100%}
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo"><div class="logo-icon">&#127968;</div>BidFlats</a>
+    <nav class="nav">
+      <button class="nav-btn active">&#127968; Home</button>
+      <button class="nav-btn" onclick="toggleFavPanel()">&#10084; Saved <span class="fav-count" id="favCount">0</span></button>
+      <button class="nav-btn" onclick="showToast('Alerts coming soon!')">&#128276; Alerts</button>
+    </nav>
+  </div>
+</header>
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Find Bank Auction Properties at Up to 40% Below Market</h1>
+    <p>Browse verified SARFAESI auction listings from 25+ banks across India</p>
+    <div class="search-box">
+      <div class="search-field"><label>City</label>
+        <select id="filterCity" onchange="applyFilters()">
+          <option value="">All Cities</option><option value="Mumbai">Mumbai</option>
+          <option value="Delhi">Delhi NCR</option><option value="Bangalore">Bangalore</option>
+          <option value="Pune">Pune</option><option value="Chennai">Chennai</option>
+          <option value="Hyderabad">Hyderabad</option><option value="Kolkata">Kolkata</option>
+          <option value="Ahmedabad">Ahmedabad</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Price Range</label>
+        <select id="filterPrice" onchange="applyFilters()">
+          <option value="">Any Price</option><option value="0-25">Under Rs.25 Lakh</option>
+          <option value="25-50">Rs.25L - Rs.50L</option><option value="50-100">Rs.50L - Rs.1 Cr</option>
+          <option value="100-200">Rs.1 Cr - Rs.2 Cr</option><option value="200-9999">Above Rs.2 Cr</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Property Type</label>
+        <select id="filterType" onchange="applyFilters()">
+          <option value="">All Types</option><option value="1 BHK">1 BHK</option>
+          <option value="2 BHK">2 BHK</option><option value="3 BHK">3 BHK</option>
+          <option value="4 BHK">4 BHK</option><option value="Penthouse">Penthouse</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Bank</label>
+        <select id="filterBank" onchange="applyFilters()">
+          <option value="">All Banks</option><option value="SBI">State Bank of India</option>
+          <option value="PNB">Punjab National Bank</option><option value="BOB">Bank of Baroda</option>
+          <option value="HDFC">HDFC Bank</option><option value="ICICI">ICICI Bank</option>
+          <option value="Axis">Axis Bank</option><option value="Union">Union Bank</option>
+          <option value="Canara">Canara Bank</option>
+        </select>
+      </div>
+      <button class="search-btn" onclick="applyFilters()">Search</button>
+    </div>
+  </div>
+</section>
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stats-left">
+      <span><strong id="resultCount">0</strong> properties found</span>
+      <span>|</span>
+      <span id="liveCount">0</span> live auctions
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="date-asc">Auction Date (Soonest)</option>
+        <option value="price-asc">Price (Low to High)</option>
+        <option value="price-desc">Price (High to Low)</option>
+        <option value="discount">Best Discount</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')">&#9638; Grid</button>
+        <button class="view-btn" id="mapViewBtn" onclick="setView('map')">Map</button>
+      </div>
+    </div>
+  </div>
+</div>
+<main class="main">
+  <div class="grid" id="propertyGrid"></div>
+  <div class="map-container" id="mapContainer"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">&#127962;</div>
+    <h3>No properties match your filters</h3>
+    <p>Try adjusting your search criteria</p>
+  </div>
+</main>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+<div class="fav-overlay" id="favOverlay" onclick="toggleFavPanel()"></div>
+<div class="fav-panel" id="favPanel">
+  <div class="fav-panel-header">
+    <h3>&#10084; Saved Properties</h3>
+    <button class="fav-panel-close" onclick="toggleFavPanel()">&#10005;</button>
+  </div>
+  <div id="favList"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var properties=[
+{id:1,title:"Spacious 3 BHK in Andheri West",type:"3 BHK",city:"Mumbai",area:"Andheri West",state:"Maharashtra",pincode:"400058",reservePrice:145,marketValue:195,bank:"SBI",bankFull:"State Bank of India",auctionDate:"2026-05-28T11:00:00",status:"upcoming",sqft:1250,floor:"8th Floor",possession:"Immediate",borrower:"Rajesh Mehta",contact:"SBI Andheri: 022-26712345",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Lift","Security","Gym"],lat:19.1136,lng:72.8697,img:"https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80"},
+{id:2,title:"Premium 2 BHK in Whitefield",type:"2 BHK",city:"Bangalore",area:"Whitefield",state:"Karnataka",pincode:"560066",reservePrice:68,marketValue:95,bank:"HDFC",bankFull:"HDFC Bank Ltd",auctionDate:"2026-06-05T10:30:00",status:"upcoming",sqft:980,floor:"3rd Floor",possession:"30 days",borrower:"Priya Nair",contact:"HDFC Whitefield: 080-28451234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Club House","Swimming Pool","24hr Water"],lat:12.9698,lng:77.7499,img:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80"},
+{id:3,title:"Luxury 4 BHK in Bandra East",type:"4 BHK",city:"Mumbai",area:"Bandra East",state:"Maharashtra",pincode:"400051",reservePrice:285,marketValue:420,bank:"ICICI",bankFull:"ICICI Bank Ltd",auctionDate:"2026-05-12T09:00:00",status:"live",sqft:2100,floor:"14th Floor",possession:"Immediate",borrower:"Vikram Shah",contact:"ICICI Bandra: 022-26553456",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Swimming Pool","Concierge","Terrace Garden"],lat:19.0596,lng:72.8611,img:"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80"},
+{id:4,title:"Affordable 1 BHK in Hadapsar",type:"1 BHK",city:"Pune",area:"Hadapsar",state:"Maharashtra",pincode:"411028",reservePrice:22,marketValue:32,bank:"PNB",bankFull:"Punjab National Bank",auctionDate:"2026-06-15T11:00:00",status:"upcoming",sqft:550,floor:"2nd Floor",possession:"45 days",borrower:"Santosh Kulkarni",contact:"PNB Hadapsar: 020-26971234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Lift","Security"],lat:18.5074,lng:73.929,img:"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80"},
+{id:5,title:"Modern 2 BHK in Gurgaon Sec-82",type:"2 BHK",city:"Delhi",area:"Gurgaon Sector 82",state:"Haryana",pincode:"122051",reservePrice:78,marketValue:105,bank:"Axis",bankFull:"Axis Bank Ltd",auctionDate:"2026-06-10T10:00:00",status:"upcoming",sqft:1050,floor:"5th Floor",possession:"Immediate",borrower:"Rahul Gupta",contact:"Axis Gurgaon: 0124-4567890",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Club House","24hr Security"],lat:28.3891,lng:76.982,img:"https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80"},
+{id:6,title:"Elegant 3 BHK in Anna Nagar",type:"3 BHK",city:"Chennai",area:"Anna Nagar",state:"Tamil Nadu",pincode:"600040",reservePrice:92,marketValue:130,bank:"Canara",bankFull:"Canara Bank",auctionDate:"2026-06-20T11:00:00",status:"upcoming",sqft:1350,floor:"4th Floor",possession:"30 days",borrower:"Suresh Rajan",contact:"Canara Anna Nagar: 044-26211234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Lift","Stilt Parking","Generator"],lat:13.085,lng:80.2101,img:"https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=600&q=80"},
+{id:7,title:"Compact 2 BHK in Hinjewadi Phase 2",type:"2 BHK",city:"Pune",area:"Hinjewadi Phase 2",state:"Maharashtra",pincode:"411057",reservePrice:55,marketValue:78,bank:"BOB",bankFull:"Bank of Baroda",auctionDate:"2026-06-02T09:30:00",status:"upcoming",sqft:875,floor:"6th Floor",possession:"Immediate",borrower:"Neha Joshi",contact:"BOB Hinjewadi: 020-22981234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","24hr Security","WiFi Lobby"],lat:18.5912,lng:73.7389,img:"https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80"},
+{id:8,title:"Penthouse in Jubilee Hills",type:"Penthouse",city:"Hyderabad",area:"Jubilee Hills",state:"Telangana",pincode:"500033",reservePrice:320,marketValue:480,bank:"HDFC",bankFull:"HDFC Bank Ltd",auctionDate:"2026-05-12T09:00:00",status:"live",sqft:3200,floor:"Top Floor",possession:"Immediate",borrower:"Arjun Reddy",contact:"HDFC Jubilee Hills: 040-23551234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Private Terrace","2 Parking","Gym","Pool","Smart Home"],lat:17.4239,lng:78.4069,img:"https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80"},
+{id:9,title:"Budget 1 BHK in Salt Lake Sector V",type:"1 BHK",city:"Kolkata",area:"Salt Lake Sector V",state:"West Bengal",pincode:"700091",reservePrice:18,marketValue:28,bank:"Union",bankFull:"Union Bank of India",auctionDate:"2026-06-25T10:00:00",status:"upcoming",sqft:480,floor:"1st Floor",possession:"60 days",borrower:"Debashis Roy",contact:"Union Bank Salt Lake: 033-23211234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Security"],lat:22.5726,lng:88.4312,img:"https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80"},
+{id:10,title:"Spacious 3 BHK on SG Highway",type:"3 BHK",city:"Ahmedabad",area:"SG Highway",state:"Gujarat",pincode:"380054",reservePrice:88,marketValue:120,bank:"SBI",bankFull:"State Bank of India",auctionDate:"2026-06-08T11:00:00",status:"upcoming",sqft:1400,floor:"7th Floor",possession:"Immediate",borrower:"Hasmukh Patel",contact:"SBI SG Highway: 079-26741234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Club House","Jogging Track"],lat:23.0395,lng:72.5081,img:"https://images.unsplash.com/photo-1416331108676-a22ccbe851f9?w=600&q=80"},
+{id:11,title:"2 BHK Near Powai Lake",type:"2 BHK",city:"Mumbai",area:"Powai",state:"Maharashtra",pincode:"400076",reservePrice:115,marketValue:158,bank:"ICICI",bankFull:"ICICI Bank Ltd",auctionDate:"2026-06-28T10:30:00",status:"upcoming",sqft:1020,floor:"9th Floor",possession:"Immediate",borrower:"Manish Sharma",contact:"ICICI Powai: 022-28571234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Lake View","Swimming Pool"],lat:19.1176,lng:72.906,img:"https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=600&q=80"},
+{id:12,title:"3 BHK in Electronic City Phase 1",type:"3 BHK",city:"Bangalore",area:"Electronic City Phase 1",state:"Karnataka",pincode:"560100",reservePrice:72,marketValue:98,bank:"Canara",bankFull:"Canara Bank",auctionDate:"2026-06-22T09:00:00",status:"upcoming",sqft:1280,floor:"4th Floor",possession:"30 days",borrower:"Kavya Shetty",contact:"Canara Electronic City: 080-27851234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Children Play Area","24hr Security"],lat:12.8399,lng:77.677,img:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80"},
+{id:13,title:"1 BHK in Noida Sector 75",type:"1 BHK",city:"Delhi",area:"Noida Sector 75",state:"Uttar Pradesh",pincode:"201301",reservePrice:32,marketValue:48,bank:"PNB",bankFull:"Punjab National Bank",auctionDate:"2026-05-30T10:00:00",status:"upcoming",sqft:620,floor:"5th Floor",possession:"Immediate",borrower:"Amit Verma",contact:"PNB Noida: 0120-4671234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Lift","24hr Security","Power Backup"],lat:28.5706,lng:77.3723,img:"https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=600&q=80"},
+{id:14,title:"4 BHK Villa in Koregaon Park",type:"4 BHK",city:"Pune",area:"Koregaon Park",state:"Maharashtra",pincode:"411001",reservePrice:245,marketValue:350,bank:"HDFC",bankFull:"HDFC Bank Ltd",auctionDate:"2026-07-01T11:00:00",status:"upcoming",sqft:2800,floor:"Ground + 1",possession:"60 days",borrower:"Meera Joshi",contact:"HDFC Koregaon Park: 020-26151234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Private Garden","2 Parking","Modular Kitchen","Home Theatre"],lat:18.5362,lng:73.8941,img:"https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80"},
+{id:15,title:"2 BHK in Madhapur HITEC City",type:"2 BHK",city:"Hyderabad",area:"Madhapur",state:"Telangana",pincode:"500081",reservePrice:62,marketValue:88,bank:"BOB",bankFull:"Bank of Baroda",auctionDate:"2026-06-12T10:00:00",status:"upcoming",sqft:950,floor:"6th Floor",possession:"30 days",borrower:"Ravi Teja",contact:"BOB HITEC City: 040-23781234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Club House","Jogging Track"],lat:17.4474,lng:78.3762,img:"https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=600&q=80"},
+{id:16,title:"3 BHK in Velachery",type:"3 BHK",city:"Chennai",area:"Velachery",state:"Tamil Nadu",pincode:"600042",reservePrice:85,marketValue:118,bank:"Axis",bankFull:"Axis Bank Ltd",auctionDate:"2026-07-05T11:00:00",status:"upcoming",sqft:1300,floor:"3rd Floor",possession:"Immediate",borrower:"Lakshmi Krishnan",contact:"Axis Velachery: 044-22531234",legalNotice:"SARFAESI Act 2002 E-Auction",amenities:["Parking","Gym","Generator","24hr Water"],lat:12.9778,lng:80.2182,img:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"}
+];
+var favorites=JSON.parse(localStorage.getItem('bidflats_favs')||'[]');
+var currentView='grid',map=null,markers=[],countdownInterval=null;
+
+function fmtP(l){return l>=100?'Rs.'+(l/100).toFixed(2)+' Cr':'Rs.'+l+' L';}
+function pctDisc(r,m){return Math.round(((m-r)/m)*100);}
+function timeLeft(d){
+  var t=new Date(d).getTime()-Date.now();
+  if(t<=0)return{days:0,hours:0,minutes:0,seconds:0};
+  return{days:Math.floor(t/86400000),hours:Math.floor(t/3600000%24),minutes:Math.floor(t/60000%60),seconds:Math.floor(t/1000%60)};
+}
+
+function renderCards(props){
+  var g=document.getElementById('propertyGrid'),e=document.getElementById('emptyState');
+  if(!props.length){g.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  g.innerHTML=props.map(function(p){
+    var d=pctDisc(p.reservePrice,p.marketValue),fav=favorites.indexOf(p.id)!==-1,live=p.status==='live',t=timeLeft(p.auctionDate);
+    return '<div class="card" onclick="openModal('+p.id+')">'+
+      '<div class="card-img"><img src="'+p.img+'" alt="'+p.title+'" loading="lazy">'+
+      '<div class="card-badge"><span class="badge badge-type">'+p.type+'</span>'+
+      (live?'<span class="badge badge-live">&#9679; LIVE</span>':'<span class="badge badge-upcoming">UPCOMING</span>')+
+      (d>=25?'<span class="badge badge-discount">'+d+'% OFF</span>':'')+
+      '</div><button class="card-fav'+(fav?' active':'')+'" onclick="event.stopPropagation();toggleFav('+p.id+')">'+(fav?'&#10084;':'&#10084;')+'</button></div>'+
+      '<div class="card-body">'+
+      '<div class="card-title">'+p.title+'</div>'+
+      '<div class="card-location">&#128205; '+p.area+', '+p.city+'</div>'+
+      '<div class="card-prices">'+
+        '<div><div class="reserve-label">Reserve Price</div><div class="reserve-price">'+fmtP(p.reservePrice)+'</div></div>'+
+        '<div style="text-align:right"><div class="market-value">'+fmtP(p.marketValue)+'</div><div class="discount-pct">'+d+'% off market</div></div>'+
+      '</div>'+
+      '<div class="card-meta">'+
+        '<span class="meta-item">'+p.sqft+' sq.ft</span>'+
+        '<span class="meta-item">'+p.floor+'</span>'+
+        '<span class="meta-item">'+p.bank+'</span>'+
+      '</div>'+
+      '<div class="card-countdown'+(live?' live':'')+'" >'+
+        '<div class="countdown-label">'+(live?'&#128308; Auction Ends In':'&#8987; Auction Starts In')+'</div>'+
+        '<div class="countdown-timer" data-date="'+p.auctionDate+'">'+
+          '<div class="countdown-unit"><div class="countdown-num">'+t.days+'</div><div class="countdown-txt">Days</div></div>'+
+          '<div class="countdown-unit"><div class="countdown-num">'+t.hours+'</div><div class="countdown-txt">Hrs</div></div>'+
+          '<div class="countdown-unit"><div class="countdown-num">'+t.minutes+'</div><div class="countdown-txt">Min</div></div>'+
+          '<div class="countdown-unit"><div class="countdown-num">'+t.seconds+'</div><div class="countdown-txt">Sec</div></div>'+
+        '</div>'+
+      '</div>'+
+      '</div></div>';
+  }).join('');
+  document.getElementById('resultCount').textContent=props.length;
+  document.getElementById('liveCount').textContent=props.filter(function(p){return p.status==='live';}).length;
+}
+
+function startCountdowns(){
+  if(countdownInterval)clearInterval(countdownInterval);
+  countdownInterval=setInterval(function(){
+    document.querySelectorAll('.countdown-timer').forEach(function(el){
+      var t=timeLeft(el.dataset.date),n=el.querySelectorAll('.countdown-num');
+      if(n.length===4){n[0].textContent=t.days;n[1].textContent=t.hours;n[2].textContent=t.minutes;n[3].textContent=t.seconds;}
+    });
+  },1000);
+}
+
+function applyFilters(){
+  var city=document.getElementById('filterCity').value,
+      price=document.getElementById('filterPrice').value,
+      type=document.getElementById('filterType').value,
+      bank=document.getElementById('filterBank').value,
+      sort=document.getElementById('sortSelect').value;
+  var f=properties.filter(function(p){
+    if(city&&p.city!==city)return false;
+    if(type&&p.type!==type)return false;
+    if(bank&&p.bank!==bank)return false;
+    if(price){var pts=price.split('-').map(Number);if(p.reservePrice<pts[0]||p.reservePrice>pts[1])return false;}
+    return true;
+  });
+  f.sort(function(a,b){
+    if(sort==='price-asc')return a.reservePrice-b.reservePrice;
+    if(sort==='price-desc')return b.reservePrice-a.reservePrice;
+    if(sort==='discount')return pctDisc(b.reservePrice,b.marketValue)-pctDisc(a.reservePrice,a.marketValue);
+    return new Date(a.auctionDate)-new Date(b.auctionDate);
+  });
+  renderCards(f);startCountdowns();
+  if(currentView==='map')renderMap(f);
+}
+
+function renderMap(props){
+  if(!map){
+    map=L.map('mapContainer').setView([20.5937,78.9629],5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:18}).addTo(map);
+  }
+  markers.forEach(function(m){map.removeLayer(m);});
+  markers=[];var bounds=[];
+  props.forEach(function(p){
+    var live=p.status==='live',d=pctDisc(p.reservePrice,p.marketValue);
+    var icon=L.divIcon({
+      html:'<div style="background:'+(live?'#ef4444':'#1a56db')+';color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)">'+fmtP(p.reservePrice)+'</div>',
+      className:'',iconSize:[90,28],iconAnchor:[45,14]
+    });
+    var mk=L.marker([p.lat,p.lng],{icon:icon}).addTo(map);
+    mk.bindPopup('<div style="min-width:220px"><img src="'+p.img+'" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px"><strong>'+p.title+'</strong><br><small style="color:#6b7280">'+p.area+'</small><br><div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:18px;font-weight:800;color:#10b981">'+fmtP(p.reservePrice)+'</span><span style="color:#10b981;font-weight:700">'+d+'% off</span></div><button onclick="openModal('+p.id+')" style="width:100%;margin-top:8px;padding:8px;background:#1a56db;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">View Details</button></div>');
+    markers.push(mk);bounds.push([p.lat,p.lng]);
+  });
+  if(bounds.length)map.fitBounds(bounds,{padding:[50,50]});
+}
+
+function setView(v){
+  currentView=v;
+  var g=document.getElementById('propertyGrid'),m=document.getElementById('mapContainer');
+  document.getElementById('gridViewBtn').classList.toggle('active',v==='grid');
+  document.getElementById('mapViewBtn').classList.toggle('active',v==='map');
+  if(v==='map'){g.classList.add('hidden');m.classList.add('active');setTimeout(function(){if(map)map.invalidateSize();applyFilters();},100);}
+  else{g.classList.remove('hidden');m.classList.remove('active');}
+}
+
+function openModal(id){
+  var p=properties.find(function(x){return x.id===id;});if(!p)return;
+  var d=pctDisc(p.reservePrice,p.marketValue),fav=favorites.indexOf(p.id)!==-1,live=p.status==='live',t=timeLeft(p.auctionDate);
+  var emi=Math.round(p.reservePrice*100000*0.0075).toLocaleString('en-IN');
+  var ppsf=Math.round(p.reservePrice*100000/p.sqft).toLocaleString('en-IN');
+  var saved=fav?'Remove Saved':'Save Property';
+  document.getElementById('modalContent').innerHTML=
+    '<button class="modal-close" onclick="closeModal()">&#10005;</button>'+
+    '<div class="modal-gallery"><img src="'+p.img+'" alt="'+p.title+'"></div>'+
+    '<div class="modal-body">'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'+
+      '<span class="badge badge-type">'+p.type+'</span>'+
+      (live?'<span class="badge badge-live">&#9679; LIVE AUCTION</span>':'<span class="badge badge-upcoming">UPCOMING</span>')+
+      '<span class="badge badge-discount">'+d+'% Below Market</span>'+
+    '</div>'+
+    '<div class="modal-title">'+p.title+'</div>'+
+    '<div class="modal-location">&#128205; '+p.area+', '+p.city+', '+p.state+' - '+p.pincode+'</div>'+
+    '<div class="modal-grid">'+
+      '<div class="modal-section"><h4>Pricing</h4>'+
+        '<div class="modal-row"><span>Reserve Price</span><span style="color:#10b981;font-size:18px">'+fmtP(p.reservePrice)+'</span></div>'+
+        '<div class="modal-row"><span>Market Value</span><span style="text-decoration:line-through;color:#9ca3af">'+fmtP(p.marketValue)+'</span></div>'+
+        '<div class="modal-row"><span>You Save</span><span style="color:#10b981">'+fmtP(p.marketValue-p.reservePrice)+' ('+d+'%)</span></div>'+
+        '<div class="modal-row"><span>EMI est. 20yr</span><span>~Rs.'+emi+'/mo</span></div>'+
+      '</div>'+
+      '<div class="modal-section"><h4>Property Details</h4>'+
+        '<div class="modal-row"><span>Area</span><span>'+p.sqft+' sq.ft</span></div>'+
+        '<div class="modal-row"><span>Floor</span><span>'+p.floor+'</span></div>'+
+        '<div class="modal-row"><span>Possession</span><span>'+p.possession+'</span></div>'+
+        '<div class="modal-row"><span>Rate/sq.ft</span><span>Rs.'+ppsf+'</span></div>'+
+      '</div>'+
+      '<div class="modal-section"><h4>Auction Info</h4>'+
+        '<div class="modal-row"><span>Bank</span><span>'+p.bankFull+'</span></div>'+
+        '<div class="modal-row"><span>Date</span><span>'+new Date(p.auctionDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+'</span></div>'+
+        '<div class="modal-row"><span>Time</span><span>'+new Date(p.auctionDate).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+'</span></div>'+
+        '<div class="modal-row"><span>Borrower</span><span>'+p.borrower+'</span></div>'+
+      '</div>'+
+      '<div class="modal-section"><h4>Legal and Contact</h4>'+
+        '<div class="modal-row"><span>Notice</span><span style="font-size:12px">'+p.legalNotice+'</span></div>'+
+        '<div class="modal-row"><span>Contact</span><span style="font-size:12px">'+p.contact+'</span></div>'+
+        '<div style="margin-top:10px">'+
+          '<div style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-bottom:6px">Amenities</div>'+
+          '<div>'+p.amenities.map(function(a){return '<span class="amenity-tag">'+a+'</span>';}).join('')+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="card-countdown'+(live?' live':'')+'" style="margin:0 0 20px">'+
+      '<div class="countdown-label">'+(live?'&#128308; Auction Ends In':'&#8987; Auction Starts In')+'</div>'+
+      '<div class="countdown-timer" data-date="'+p.auctionDate+'">'+
+        '<div class="countdown-unit"><div class="countdown-num" style="font-size:28px;padding:6px 14px">'+t.days+'</div><div class="countdown-txt">Days</div></div>'+
+        '<div class="countdown-unit"><div class="countdown-num" style="font-size:28px;padding:6px 14px">'+t.hours+'</div><div class="countdown-txt">Hrs</div></div>'+
+        '<div class="countdown-unit"><div class="countdown-num" style="font-size:28px;padding:6px 14px">'+t.minutes+'</div><div class="countdown-txt">Min</div></div>'+
+        '<div class="countdown-unit"><div class="countdown-num" style="font-size:28px;padding:6px 14px">'+t.seconds+'</div><div class="countdown-txt">Sec</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="modal-cta">'+
+      '<button class="btn btn-primary" onclick="showToast(\'Contact: \'+properties.find(function(x){return x.id==='+id+';}).contact)">&#128222; Contact Bank</button>'+
+      '<button class="btn btn-outline" onclick="toggleFav('+id+');closeModal()">'+saved+'</button>'+
+      '<button class="btn btn-success" onclick="showToast(\'Document download coming soon!\')">&#128196; Download Notice</button>'+
+    '</div>'+
+    '</div>';
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active');document.body.style.overflow='';}
+
+function toggleFav(id){
+  var i=favorites.indexOf(id);
+  if(i===-1){favorites.push(id);showToast('Saved to favorites!');}
+  else{favorites.splice(i,1);showToast('Removed from saved');}
+  localStorage.setItem('bidflats_favs',JSON.stringify(favorites));
+  updateFavCount();applyFilters();renderFavPanel();
+}
+function updateFavCount(){document.getElementById('favCount').textContent=favorites.length;}
+function toggleFavPanel(){
+  document.getElementById('favPanel').classList.toggle('open');
+  document.getElementById('favOverlay').classList.toggle('open');
+  if(document.getElementById('favPanel').classList.contains('open'))renderFavPanel();
+}
+function renderFavPanel(){
+  var list=document.getElementById('favList');
+  var fp=properties.filter(function(p){return favorites.indexOf(p.id)!==-1;});
+  if(!fp.length){
+    list.innerHTML='<div style="padding:40px;text-align:center;color:#9ca3af"><div style="font-size:48px;margin-bottom:12px">&#10084;</div><p>No saved properties yet.<br>Click Save on any listing.</p></div>';
+    return;
+  }
+  list.innerHTML=fp.map(function(p){
+    return '<div class="fav-item" onclick="toggleFavPanel();openModal('+p.id+')">'+
+      '<img src="'+p.img+'" alt="'+p.title+'">'+
+      '<div class="fav-item-info"><h4>'+p.title+'</h4><p>&#128205; '+p.area+', '+p.city+'</p><div class="fav-item-price">'+fmtP(p.reservePrice)+'</div></div>'+
+    '</div>';
+  }).join('');
+}
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){closeModal();if(document.getElementById('favPanel').classList.contains('open'))toggleFavPanel();}
+});
+updateFavCount();applyFilters();
+</script>
+</body>
+</html>
