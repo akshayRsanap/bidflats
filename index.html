@@ -629,12 +629,41 @@ function init(props) {
   applyFilters();
 }
 
-// Load properties.json
+// Load data progressively: IBAPI first (~200KB, instant), then FI (~12MB, background)
 (function() {
-  fetch('properties.json')
-    .then(function(r) { if (!r.ok) throw new Error('no file'); return r.json(); })
-    .then(function(data) { init(data); })
-    .catch(function() { init([]); showToast('Could not load listings.'); });
+  var allProps = [];
+
+  function showLoading(msg) {
+    var grid = document.getElementById('propertyGrid');
+    if (grid) grid.innerHTML = '<div class="loading-bar">' + msg + '</div>';
+  }
+
+  showLoading('Loading listings…');
+
+  // Step 1: Load IBAPI entries (small, fast)
+  fetch('props_ibapi.json?v=20260515')
+    .then(function(r) { if (!r.ok) throw new Error('ibapi'); return r.json(); })
+    .then(function(ibapi) {
+      allProps = ibapi;
+      init(allProps);  // show IBAPI entries immediately
+      showToast('Loaded ' + ibapi.length + ' listings — fetching more…');
+
+      // Step 2: Load FI entries in background
+      return fetch('props_fi.json?v=20260515');
+    })
+    .then(function(r) { if (!r.ok) throw new Error('fi'); return r.json(); })
+    .then(function(fi) {
+      allProps = allProps.concat(fi);
+      init(allProps);  // refresh with full dataset
+      showToast('All ' + allProps.length.toLocaleString('en-IN') + ' listings loaded!');
+    })
+    .catch(function(err) {
+      if (!allProps.length) {
+        // Nothing loaded at all
+        showLoading('Failed to load listings. Please refresh the page.');
+      }
+      // If IBAPI loaded but FI failed, we already have results showing
+    });
 })();
 </script>
 </body>
